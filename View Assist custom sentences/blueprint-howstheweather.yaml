@@ -3,31 +3,37 @@ blueprint:
   description: Ask "How's the Weather?" and ViewAssist will respond with the weather and show the weather view.
   domain: automation
   input:
-    dashboard: /dashboard-viewassist/weather
-    group_entity: group.assist_satellites
-    weather_entity: weather.home
+    dashboard:
+      name: Dashboard
+      description: The base dashboard for View Assist
+      default: "/dashboard-viewassist/weather"
+    group_entity: 
+      name: Group Entity
+      description: The group entity that holds the list of ViewAssist 
+      default: "group.assist_satellites"
+    weather_entity: 
+      name: Weather Entity
+      description: The entity that provides weather information.
+      default: "weather.home"
     
-#entities that need to be variables
-#weather.home
-#group.assist_satellites
-#/dashboard-viewassist/weather
-
-
-#comment
+# Main automation configuration
 alias: VIEWASSIST - How's the weather
 description: "Find out what the weather is"
 trigger:
   - platform: conversation
     command: How's the weather
+variables:
+  group_entity: !input group_entity
+  weather_entity: !input weather_entity
 condition: []
 action:
   - set_conversation_response: >-
-      Its {{ state_attr('weather.home', 'temperature') }} degrees and
-      {{states.weather.home.state}}
+      Its {{ state_attr('{weather_entity}', 'temperature') }} degrees and
+      {{states.{weather_entity}.state}}
     enabled: true
   - variables:
       target_satellite_device: |-
-        {% for sat in expand('group.assist_satellites') %}
+        {% for sat in expand('{group_entity}') %}
           {% if device_id(sat.attributes.mic_device)  == trigger.device_id %}
             {{ sat.name }}
           {% endif %}
